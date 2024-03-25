@@ -1,7 +1,13 @@
+//Matthew Cardona
+//COP3502C
+//3/24/24
+
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
+//Allocates Extra Memory
 int extraMemoryAllocated;
 
 void *Alloc(size_t sz)
@@ -28,36 +34,128 @@ size_t Size(void* ptr)
 
 // implements heap sort
 // extraMemoryAllocated counts bytes of memory allocated
+void heapify(int arr[], int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+
+    if (l < n && arr[l] > arr[largest])
+        largest = l;
+
+    if (r < n && arr[r] > arr[largest])
+        largest = r;
+
+    if (largest != i) {
+        swap(&arr[i], &arr[largest]);
+        heapify(arr, n, largest);
+    }
+}
+
 void heapSort(int arr[], int n)
 {
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    for (int i = n - 1; i > 0; i--) {
+        swap(&arr[0], &arr[i]);
+        heapify(arr, i, 0);
+    }
 }
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
+void merge(int arr[], int l, int m, int r) {
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    int L[n1], R[n2];
+
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+
+    int i = 0;
+    int j = 0;
+    int k = l;
+
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        }
+        else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
 void mergeSort(int pData[], int l, int r)
 {
-	
+    if (l < r) {
+        int m = l + (r - l) / 2;
+
+        mergeSort(pData, l, m);
+        mergeSort(pData, m + 1, r);
+
+        merge(pData, l, m, r);
+    }
 }
 
 // implement insertion sort
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n)
 {
-	
+    for (int i = 1; i < n; i++) {
+        int key = pData[i];
+        int j = i - 1;
+        while (j >= 0 && pData[j] > key) {
+            pData[j + 1] = pData[j];
+            j = j - 1;
+        }
+        pData[j + 1] = key;
+    }
 }
 
 // implement bubble sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void bubbleSort(int* pData, int n)
 {
-	
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (pData[j] > pData[j + 1]) {
+                swap(&pData[j], &pData[j + 1]);
+            }
+        }
+    }
 }
 
 // implement selection sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n)
 {
-	
+    for (int i = 0; i < n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j < n; j++) {
+            if (pData[j] < pData[min_index])
+                min_index = j;
+        }
+        swap(&pData[i], &pData[min_index]);
+    }
 }
 
 // parses input file to an integer array
@@ -72,6 +170,9 @@ int parseData(char *inputFileName, int **ppData)
 		fscanf(inFile,"%d\n",&dataSz);
 		*ppData = (int *)Alloc(sizeof(int) * dataSz);
 		// Implement parse data block
+		for (int i = 0; i < dataSz; i++) {
+            		fscanf(inFile, "%d", &(*ppData)[i]);
+        	}
 	}
 	
 	return dataSz;
@@ -99,7 +200,7 @@ int main(void)
 {
 	clock_t start, end;
 	int i;
-    double cpu_time_used;
+    	double cpu_time_used;
 	char* fileNames[] = {"input1.txt", "input2.txt", "input3.txt"};
 	
 	for (i=0;i<3;++i)
